@@ -1,0 +1,93 @@
+export const agents = [
+  {
+    id:'ceo',
+    name:'CEO Agent',
+    role:'Chief Executive Officer',
+    icon:'👨‍💼',
+    color:0x315b91,
+    room:'CEO Office',
+    desc:'Mengatur prioritas perusahaan, membagi pekerjaan, memantau hasil, dan meminta persetujuan owner.',
+    task:'Memantau seluruh aktivitas perusahaan.',
+    status:'Monitoring',
+    position:[-7.1,0,-4],
+    desk:[-7.1,0,-5]
+  },
+  {
+    id:'research',
+    name:'Research Agent',
+    role:'Market Research',
+    icon:'🔎',
+    color:0x4c8d9b,
+    room:'Research Area',
+    desc:'Mencari tren pasar, kebutuhan pelanggan, kompetitor, dan peluang produk digital.',
+    task:'Mencari peluang produk digital.',
+    status:'Working',
+    position:[-3.9,0,-3.7],
+    desk:[-3.9,0,-2.95]
+  },
+  {
+    id:'product',
+    name:'Product Agent',
+    role:'Product Creator',
+    icon:'📦',
+    color:0x7b69a8,
+    room:'Product Studio',
+    desc:'Menyusun dan membuat template Excel, Google Sheets, Notion, serta produk digital.',
+    task:'Menyusun konsep template produktivitas.',
+    status:'Working',
+    position:[0,0,-3.7],
+    desk:[0,0,-2.95]
+  },
+  {
+    id:'qa',
+    name:'QA Agent',
+    role:'Quality Assurance',
+    icon:'🧪',
+    color:0x3c9273,
+    room:'QA Lab',
+    desc:'Memeriksa fungsi, formula, tampilan, kesalahan, dan kelayakan produk sebelum dirilis.',
+    task:'Menunggu produk untuk diuji.',
+    status:'Idle',
+    position:[4,0,-3.7],
+    desk:[4,0,-2.95]
+  },
+  {
+    id:'youtube',
+    name:'YouTube Agent',
+    role:'Content Creator',
+    icon:'🎬',
+    color:0xb46c45,
+    room:'Content Studio',
+    desc:'Membuat ide konten, naskah, judul, deskripsi, dan rencana publikasi faceless YouTube.',
+    task:'Menyusun ide konten pertama.',
+    status:'Idle',
+    position:[-4,0,3.3],
+    desk:[-4,0,2.55]
+  },
+  {
+    id:'sales',
+    name:'Sales Agent',
+    role:'Marketing & Sales',
+    icon:'📈',
+    color:0x3979b8,
+    room:'Operations',
+    desc:'Menyusun strategi pemasaran, penawaran produk, pelayanan pelanggan, dan evaluasi penjualan.',
+    task:'Menunggu produk siap dipasarkan.',
+    status:'Idle',
+    position:[0,0,3.3],
+    desk:[0,0,2.55]
+  },
+  {
+    id:'finance',
+    name:'Finance Agent',
+    role:'Finance Controller',
+    icon:'💰',
+    color:0x9b8643,
+    room:'Finance Area',
+    desc:'Mencatat pemasukan, biaya, margin, target penjualan, dan membuat laporan keuangan.',
+    task:'Menyiapkan struktur laporan keuangan.',
+    status:'Idle',
+    position:[4,0,3.3],
+    desk:[4,0,2.55]
+  }
+];
