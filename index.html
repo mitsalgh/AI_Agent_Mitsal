@@ -5,66 +5,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Company Mission Control</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#0b1020;color:#e8eefc;font-family:Arial,sans-serif;overflow:hidden}
-header{height:65px;padding:12px 20px;background:#111a2d;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #29354d}
-.brand{font-size:18px;font-weight:bold;letter-spacing:.5px}
+body{
+ margin:0;background:#0b1020;color:#e8eefc;
+ font-family:Arial,sans-serif;overflow:hidden
+}
+header{
+ height:65px;padding:12px 20px;background:#111a2d;
+ display:flex;align-items:center;justify-content:space-between;
+ border-bottom:1px solid #29354d
+}
+.brand{font-size:18px;font-weight:bold}
 .brand span{color:#51d9bd}
 .status{font-size:12px;color:#65e6b6}
 main{display:flex;height:calc(100vh - 65px)}
-#office{flex:1;min-width:0;position:relative}
+#office{flex:1;min-width:0;position:relative;overflow:hidden}
 #scene{width:100%;height:100%;display:block}
-#side{width:310px;background:#111a2d;border-left:1px solid #29354d;padding:18px;overflow:auto}
+#side{
+ width:310px;background:#111a2d;
+ border-left:1px solid #29354d;padding:18px;overflow:auto
+}
 h3{margin:0 0 14px;font-size:15px}
-.card{background:#1b2940;border:1px solid #30415d;border-radius:12px;padding:13px;margin-bottom:12px}
+.card{
+ background:#1b2940;border:1px solid #30415d;
+ border-radius:12px;padding:13px;margin-bottom:12px
+}
 .muted{color:#91a1bd;font-size:12px}
-.agent{display:flex;align-items:center;gap:10px;margin:12px 0;cursor:pointer}
-.avatar{width:35px;height:35px;border-radius:50%;display:grid;place-items:center;background:#304766;font-size:19px}
+.agent{
+ display:flex;align-items:center;gap:10px;
+ margin:12px 0;cursor:pointer
+}
+.avatar{
+ width:35px;height:35px;border-radius:50%;
+ display:grid;place-items:center;background:#304766;font-size:19px
+}
 .agent strong{font-size:13px}
 .agent small{display:block;color:#9aabc4;margin-top:4px}
-.dot{width:7px;height:7px;border-radius:50%;background:#52d6a3;display:inline-block;margin-right:5px}
+.dot{
+ width:7px;height:7px;border-radius:50%;
+ background:#52d6a3;display:inline-block;margin-right:5px
+}
 #profile{display:none}
-#profile button{border:0;background:#38bda5;color:#071b20;padding:9px 12px;border-radius:7px;cursor:pointer}
-#hint{position:absolute;bottom:14px;left:14px;background:#111a2ddd;padding:10px 13px;border-radius:9px;color:#aab9d0;font-size:11px}
-#activity{font-size:12px;line-height:1.8;color:#bdc9dc}
+#profile button{
+ border:0;background:#38bda5;color:#071b20;
+ padding:9px 12px;border-radius:7px;cursor:pointer
+}
+#hint{
+ position:absolute;bottom:14px;left:14px;
+ background:#111a2ddd;padding:10px 13px;
+ border-radius:9px;color:#aab9d0;font-size:11px
+}
 @media(max-width:700px){
  main{flex-direction:column}
  #office{height:58%;flex:none}
- #side{width:100%;height:42%;border-left:0;border-top:1px solid #29354d}
+ #side{
+  width:100%;height:42%;
+  border-left:0;border-top:1px solid #29354d
+ }
  header{height:55px}
 }
 </style>
+
+<script type="importmap">
+{
+ "imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+ }
+}
+</script>
 </head>
+
 <body>
 <header>
  <div class="brand">◈ AI COMPANY <span>MISSION CONTROL</span></div>
  <div class="status">● SYSTEM ONLINE · DEMO</div>
 </header>
+
 <main>
  <section id="office">
   <canvas id="scene"></canvas>
-  <div id="hint">Drag: putar kantor · Scroll: zoom · Klik karakter: lihat karyawan</div>
+  <div id="hint">Drag: putar kantor · Scroll: zoom · Klik karakter: lihat profil</div>
  </section>
+
  <aside id="side">
   <div class="card">
    <h3>Company Overview</h3>
    <div class="muted">AI Workforce</div>
-   <div style="font-size:28px;margin:7px 0">07 <span style="font-size:12px;color:#52d6a3">Employees</span></div>
+   <div style="font-size:28px;margin:7px 0">
+    07 <span style="font-size:12px;color:#52d6a3">Employees</span>
+   </div>
    <div class="muted">6 Departments · 1 Mission Control</div>
   </div>
+
   <div class="card">
    <h3>AI Employees</h3>
    <div id="agents"></div>
   </div>
+
   <div class="card" id="profile">
    <h3>Employee Profile</h3>
    <div id="profileContent"></div>
    <button onclick="closeProfile()">Close Profile</button>
   </div>
+
   <div class="card">
    <h3>Live Activity</h3>
-   <div id="activity">
+   <div style="font-size:12px;line-height:1.9;color:#bdc9dc">
     <div>🟢 CEO — Monitoring company</div>
     <div>🔵 Research — Market analysis</div>
     <div>🟢 Product — Developing templates</div>
@@ -74,13 +123,14 @@ h3{margin:0 0 14px;font-size:15px}
     <div>🟢 Finance — Tracking expenses</div>
    </div>
   </div>
-  <div class="muted">Prototype v1.0 · Demo activities</div>
+
+  <div class="muted">Prototype v1.1 · Demo activities</div>
  </aside>
 </main>
 
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const canvas=document.getElementById('scene');
 const scene=new THREE.Scene();
@@ -89,8 +139,10 @@ scene.background=new THREE.Color('#0b1020');
 const camera=new THREE.PerspectiveCamera(35,1,0.1,100);
 camera.position.set(12,13,16);
 
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const renderer=new THREE.WebGLRenderer({
+ canvas,antialias:true
+});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
@@ -102,13 +154,16 @@ controls.minDistance=9;
 controls.maxDistance=28;
 
 scene.add(new THREE.HemisphereLight(0xbad5ff,0x273047,2));
+
 const light=new THREE.DirectionalLight(0xffffff,3);
 light.position.set(8,15,10);
 light.castShadow=true;
 scene.add(light);
 
-const floorMat=new THREE.MeshStandardMaterial({color:'#263852',roughness:.8});
-const floor=new THREE.Mesh(new THREE.BoxGeometry(13,.35,9),floorMat);
+const floor=new THREE.Mesh(
+ new THREE.BoxGeometry(13,.35,9),
+ new THREE.MeshStandardMaterial({color:'#263852'})
+);
 floor.position.y=-.2;
 floor.receiveShadow=true;
 scene.add(floor);
@@ -117,23 +172,55 @@ const grid=new THREE.GridHelper(13,26,'#49617d','#354963');
 grid.position.y=0;
 scene.add(grid);
 
+function material(color){
+ return new THREE.MeshStandardMaterial({
+  color,roughness:.8
+ });
+}
+
+function box(parent,w,h,d,x,y,z,color){
+ const m=new THREE.Mesh(
+  new THREE.BoxGeometry(w,h,d),material(color)
+ );
+ m.position.set(x,y,z);
+ m.castShadow=true;
+ m.receiveShadow=true;
+ parent.add(m);
+ return m;
+}
+
+function makeLabel(text){
+ const c=document.createElement('canvas');
+ c.width=512;c.height=96;
+ const ctx=c.getContext('2d');
+ ctx.fillStyle='#101b2c';
+ ctx.fillRect(0,0,512,96);
+ ctx.fillStyle='white';
+ ctx.font='bold 34px Arial';
+ ctx.textAlign='center';
+ ctx.fillText(text,256,62);
+
+ const texture=new THREE.CanvasTexture(c);
+ return new THREE.Mesh(
+  new THREE.PlaneGeometry(2.5,.47),
+  new THREE.MeshBasicMaterial({map:texture})
+ );
+}
+
 const rooms=[
- {name:'CEO OFFICE',x:-4,z:-2,c:'#3d718f',role:'CEO'},
- {name:'RESEARCH',x:0,z:-2,c:'#476a9d',role:'Research'},
- {name:'PRODUCT',x:4,z:-2,c:'#397f78',role:'Product'},
- {name:'QUALITY ASSURANCE',x:-4,z:2,c:'#8b7045',role:'QA'},
- {name:'YOUTUBE STUDIO',x:0,z:2,c:'#80547c',role:'YouTube'},
- {name:'SALES & FINANCE',x:4,z:2,c:'#637b50',role:'Sales'}
+ {name:'CEO OFFICE',x:-4,z:-2,c:'#3d718f'},
+ {name:'RESEARCH',x:0,z:-2,c:'#476a9d'},
+ {name:'PRODUCT',x:4,z:-2,c:'#397f78'},
+ {name:'QUALITY ASSURANCE',x:-4,z:2,c:'#8b7045'},
+ {name:'YOUTUBE STUDIO',x:0,z:2,c:'#80547c'},
+ {name:'SALES & FINANCE',x:4,z:2,c:'#637b50'}
 ];
 
-const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.8});
-function box(parent,w,h,d,x,y,z,color){
- const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));
- m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;
- parent.add(m);return m;
-}
 rooms.forEach(r=>{
- const g=new THREE.Group();g.position.set(r.x,0,r.z);scene.add(g);
+ const g=new THREE.Group();
+ g.position.set(r.x,0,r.z);
+ scene.add(g);
+
  box(g,3.7,.12,2.7,0,.12,0,r.c);
  box(g,3.7,1.15,.12,0,.7,-1.35,'#34475f');
  box(g,.12,1.15,2.7,-1.85,.7,0,'#34475f');
@@ -141,20 +228,11 @@ rooms.forEach(r=>{
  box(g,1.3,.15,.7,0,.55,0,'#9ba9ba');
  box(g,.12,.6,.12,-.5,.15,.2,'#b4c2d4');
  box(g,.12,.6,.12,.5,.15,.2,'#b4c2d4');
- const label=makeLabel(r.name);
- label.position.set(0,1.35,-1.18);g.add(label);
-});
 
-function makeLabel(text){
- const c=document.createElement('canvas');c.width=512;c.height=96;
- const ctx=c.getContext('2d');
- ctx.fillStyle='#101b2c';ctx.fillRect(0,0,512,96);
- ctx.fillStyle='white';ctx.font='bold 34px Arial';
- ctx.textAlign='center';ctx.fillText(text,256,62);
- const t=new THREE.CanvasTexture(c);
- const m=new THREE.Mesh(new THREE.PlaneGeometry(2.5,.47),new THREE.MeshBasicMaterial({map:t,transparent:false}));
- return m;
-}
+ const label=makeLabel(r.name);
+ label.position.set(0,1.35,-1.18);
+ g.add(label);
+});
 
 const people=[
  ['CEO','Chief Executive Officer','Strategic planning','🧠',-4,-2,'#f2c078'],
@@ -167,75 +245,133 @@ const people=[
 ];
 
 const clickable=[];
+
 people.forEach((p,i)=>{
  const g=new THREE.Group();
  g.position.set(p[4],0,p[5]+.45);
+ g.userData.index=i;
  scene.add(g);
- const skin=mat(p[6]);
- const body=new THREE.Mesh(new THREE.CylinderGeometry(.25,.32,.65,16),mat('#273b59'));
- body.position.y=.58;body.castShadow=true;g.add(body);
- const head=new THREE.Mesh(new THREE.SphereGeometry(.24,20,16),skin);
- head.position.y=1.12;head.castShadow=true;g.add(head);
- const hair=new THREE.Mesh(new THREE.SphereGeometry(.245,16,8,0,Math.PI*2,0,Math.PI/2),mat('#263044'));
- hair.position.y=1.23;g.add(hair);
- const eyeMat=mat('#172333');
+
+ const body=new THREE.Mesh(
+  new THREE.CylinderGeometry(.25,.32,.65,16),
+  material('#273b59')
+ );
+ body.position.y=.58;
+ body.castShadow=true;
+ g.add(body);
+
+ const head=new THREE.Mesh(
+  new THREE.SphereGeometry(.24,20,16),
+  material(p[6])
+ );
+ head.position.y=1.12;
+ head.castShadow=true;
+ g.add(head);
+
+ const hair=new THREE.Mesh(
+  new THREE.SphereGeometry(
+   .245,16,8,0,Math.PI*2,0,Math.PI/2
+  ),
+  material('#263044')
+ );
+ hair.position.y=1.23;
+ g.add(hair);
+
  [-.085,.085].forEach(x=>{
-  const eye=new THREE.Mesh(new THREE.SphereGeometry(.025,8,8),eyeMat);
-  eye.position.set(x,1.14,.21);g.add(eye);
+  const eye=new THREE.Mesh(
+   new THREE.SphereGeometry(.025,8,8),
+   material('#172333')
+  );
+  eye.position.set(x,1.14,.21);
+  g.add(eye);
  });
- const base=new THREE.Mesh(new THREE.CylinderGeometry(.32,.32,.06,16),mat('#7a91ae'));
- base.position.y=.06;g.add(base);
- g.userData={index:i,name:p[0]};
- scene.add(g);clickable.push(g);
+
+ const base=new THREE.Mesh(
+  new THREE.CylinderGeometry(.32,.32,.06,16),
+  material('#7a91ae')
+ );
+ base.position.y=.06;
+ g.add(base);
+
+ clickable.push(g);
+
  const el=document.createElement('div');
  el.className='agent';
- el.innerHTML=`<div class="avatar">${p[3]}</div><div><strong>${p[0]}</strong><small><span class="dot"></span>Available · Demo</small></div>`;
+ el.innerHTML=`
+  <div class="avatar">${p[3]}</div>
+  <div>
+   <strong>${p[0]}</strong>
+   <small><span class="dot"></span>Available · Demo</small>
+  </div>`;
  el.onclick=()=>showProfile(i);
  document.getElementById('agents').appendChild(el);
 });
 
-window.showProfile=(i)=>{
+window.showProfile=function(i){
  const p=people[i];
  document.getElementById('profile').style.display='block';
- document.getElementById('profileContent').innerHTML=
- `<h2>${p[3]} ${p[0]}</h2><p class="muted">${p[1]}</p><p>Current task: ${p[2]}</p><p class="muted">Status: Demo / Simulation</p>`;
+ document.getElementById('profileContent').innerHTML=`
+  <h2>${p[3]} ${p[0]}</h2>
+  <p class="muted">${p[1]}</p>
+  <p>Current task: ${p[2]}</p>
+  <p class="muted">Status: Demo / Simulation</p>`;
 };
-window.closeProfile=()=>document.getElementById('profile').style.display='none';
+
+window.closeProfile=function(){
+ document.getElementById('profile').style.display='none';
+};
 
 const raycaster=new THREE.Raycaster();
 const pointer=new THREE.Vector2();
+
 canvas.addEventListener('click',e=>{
  const rect=canvas.getBoundingClientRect();
  pointer.x=((e.clientX-rect.left)/rect.width)*2-1;
  pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;
+
  raycaster.setFromCamera(pointer,camera);
  const hits=raycaster.intersectObjects(clickable,true);
+
  if(hits.length){
   let obj=hits[0].object;
-  while(obj && obj.userData.index===undefined)obj=obj.parent;
+  while(obj && obj.userData.index===undefined){
+   obj=obj.parent;
+  }
   if(obj)showProfile(obj.userData.index);
  }
 });
 
 function resize(){
- const w=canvas.clientWidth,h=canvas.clientHeight;
- camera.aspect=w/h;camera.updateProjectionMatrix();
+ const w=canvas.clientWidth;
+ const h=canvas.clientHeight;
+ if(!w || !h)return;
+
+ camera.aspect=w/h;
+ camera.updateProjectionMatrix();
  renderer.setSize(w,h,false);
 }
-new ResizeObserver(resize).observe(canvas.parentElement);
+
+window.addEventListener('resize',resize);
+new ResizeObserver(resize).observe(
+ document.getElementById('office')
+);
 resize();
 
 const clock=new THREE.Clock();
+
 function animate(){
  requestAnimationFrame(animate);
  const t=clock.getElapsedTime();
+
  clickable.forEach((g,i)=>{
   g.position.y=.05+Math.sin(t*2+i)*.045;
   g.rotation.y=Math.sin(t*.7+i)*.12;
  });
+
  controls.update();
  renderer.render(scene,camera);
 }
+
 animate();
 </script>
 </body>
