@@ -4,375 +4,652 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Company Mission Control</title>
-
-<style>
-*{box-sizing:border-box}
-body{
- margin:0;background:#0b1020;color:#e8eefc;
- font-family:Arial,sans-serif;overflow:hidden
-}
-header{
- height:65px;padding:12px 20px;background:#111a2d;
- display:flex;align-items:center;justify-content:space-between;
- border-bottom:1px solid #29354d
-}
-.brand{font-size:18px;font-weight:bold}
-.brand span{color:#51d9bd}
-.status{font-size:12px;color:#65e6b6}
-main{display:flex;height:calc(100vh - 65px)}
-#office{flex:1;min-width:0;position:relative;overflow:hidden}
-#scene{width:100%;height:100%;display:block}
-#side{
- width:310px;background:#111a2d;
- border-left:1px solid #29354d;padding:18px;overflow:auto
-}
-h3{margin:0 0 14px;font-size:15px}
-.card{
- background:#1b2940;border:1px solid #30415d;
- border-radius:12px;padding:13px;margin-bottom:12px
-}
-.muted{color:#91a1bd;font-size:12px}
-.agent{
- display:flex;align-items:center;gap:10px;
- margin:12px 0;cursor:pointer
-}
-.avatar{
- width:35px;height:35px;border-radius:50%;
- display:grid;place-items:center;background:#304766;font-size:19px
-}
-.agent strong{font-size:13px}
-.agent small{display:block;color:#9aabc4;margin-top:4px}
-.dot{
- width:7px;height:7px;border-radius:50%;
- background:#52d6a3;display:inline-block;margin-right:5px
-}
-#profile{display:none}
-#profile button{
- border:0;background:#38bda5;color:#071b20;
- padding:9px 12px;border-radius:7px;cursor:pointer
-}
-#hint{
- position:absolute;bottom:14px;left:14px;
- background:#111a2ddd;padding:10px 13px;
- border-radius:9px;color:#aab9d0;font-size:11px
-}
-@media(max-width:700px){
- main{flex-direction:column}
- #office{height:58%;flex:none}
- #side{
-  width:100%;height:42%;
-  border-left:0;border-top:1px solid #29354d
- }
- header{height:55px}
-}
-</style>
+<title>AI Company — Mission Control</title>
 
 <script type="importmap">
 {
- "imports":{
-  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
- }
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
 }
 </script>
+
+<style>
+:root {
+  --bg:#f4f6f8;
+  --panel:rgba(255,255,255,.94);
+  --ink:#17212b;
+  --muted:#718096;
+  --line:#e7ebef;
+  --accent:#3978e8;
+  --green:#20a66a;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:Inter,Arial,sans-serif;
+}
+#scene { position:fixed; inset:0; }
+canvas { display:block; }
+.topbar {
+  position:fixed; z-index:5; top:14px; left:16px; right:16px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; pointer-events:none;
+}
+.brand,.top-actions { pointer-events:auto; }
+.brand {
+  background:var(--panel); border:1px solid var(--line);
+  border-radius:14px; padding:11px 15px;
+  box-shadow:0 5px 22px #1b2a3a12;
+}
+.brand strong { font-size:14px; letter-spacing:.2px; }
+.brand small { display:block; color:var(--muted); margin-top:3px; }
+.top-actions { display:flex; gap:8px; }
+button {
+  border:1px solid var(--line); background:white; color:var(--ink);
+  padding:10px 13px; border-radius:10px; cursor:pointer;
+  font-weight:600; font-size:12px;
+}
+button.primary { background:var(--accent); color:white; border-color:var(--accent); }
+button:hover { filter:brightness(.97); }
+button:disabled { opacity:.5; cursor:not-allowed; }
+.panel {
+  position:fixed; z-index:4; background:var(--panel);
+  border:1px solid var(--line); border-radius:16px;
+  box-shadow:0 8px 30px #1b2a3a12;
+  backdrop-filter:blur(12px);
+}
+.left-panel {
+  top:88px; left:16px; width:220px; padding:15px;
+  max-height:calc(100vh - 110px); overflow:auto;
+}
+.right-panel {
+  top:88px; right:16px; width:290px; padding:17px;
+  max-height:calc(100vh - 110px); overflow:auto;
+  display:none;
+}
+.panel h3 { margin:0 0 5px; font-size:14px; }
+.sub { color:var(--muted); font-size:11px; line-height:1.5; }
+.agent-list { margin-top:13px; display:grid; gap:7px; }
+.agent-row {
+  display:flex; align-items:center; gap:9px; padding:9px;
+  border:1px solid var(--line); border-radius:10px;
+  cursor:pointer; background:#fff;
+}
+.agent-row:hover { border-color:#a9c5f5; }
+.avatar {
+  width:29px; height:29px; display:grid; place-items:center;
+  border-radius:9px; background:#edf3ff; font-size:16px;
+}
+.agent-row strong { display:block; font-size:11px; }
+.agent-row small { color:var(--muted); font-size:10px; }
+.dot {
+  margin-left:auto; width:7px; height:7px; border-radius:50%;
+  background:var(--green);
+}
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+.stat {
+  padding:10px; background:#f6f8fa; border-radius:10px;
+}
+.stat strong { display:block; font-size:19px; }
+.stat small { color:var(--muted); font-size:10px; }
+.profile-head { display:flex; gap:10px; align-items:center; margin-bottom:14px; }
+.profile-icon {
+  width:42px; height:42px; display:grid; place-items:center;
+  background:#edf3ff; border-radius:13px; font-size:23px;
+}
+.profile-head strong { font-size:14px; display:block; }
+.profile-head small { color:var(--muted); font-size:11px; }
+.field-label { font-size:11px; font-weight:700; margin:14px 0 6px; display:block; }
+.task-box {
+  padding:11px; border:1px solid var(--line); border-radius:10px;
+  font-size:12px; line-height:1.5; background:#fff;
+}
+input,textarea {
+  width:100%; border:1px solid var(--line); border-radius:9px;
+  padding:10px; font:12px Arial; outline:none;
+}
+textarea { resize:vertical; min-height:65px; }
+.status-pill {
+  display:inline-block; padding:5px 8px; border-radius:20px;
+  background:#e8f7ef; color:#168454; font-size:10px; font-weight:700;
+}
+.bottom-hint {
+  position:fixed; z-index:3; bottom:15px; left:50%;
+  transform:translateX(-50%); padding:9px 13px;
+  background:#ffffffdf; border:1px solid var(--line);
+  border-radius:20px; color:#667085; font-size:11px;
+  white-space:nowrap; pointer-events:none;
+}
+#toast {
+  position:fixed; z-index:10; bottom:55px; left:50%;
+  transform:translateX(-50%); background:#17212b; color:white;
+  border-radius:10px; padding:10px 14px; font-size:12px;
+  display:none;
+}
+#loading {
+  position:fixed; inset:0; z-index:20; display:grid;
+  place-items:center; background:#f4f6f8; color:#475467;
+  font-size:13px;
+}
+@media(max-width:700px) {
+  .topbar { top:8px; left:8px; right:8px; }
+  .brand { padding:9px 11px; }
+  .brand strong { font-size:12px; }
+  .brand small { font-size:9px; }
+  .top-actions button { padding:9px; font-size:10px; }
+  .left-panel {
+    left:8px; top:70px; width:158px; padding:10px;
+    max-height:43vh;
+  }
+  .right-panel {
+    right:8px; top:70px; width:min(230px,58vw);
+    padding:12px; max-height:55vh;
+  }
+  .agent-row { padding:6px; gap:6px; }
+  .agent-row strong { font-size:10px; }
+  .agent-row small { font-size:9px; }
+  .avatar { width:24px; height:24px; }
+  .bottom-hint { bottom:8px; font-size:9px; }
+}
+</style>
 </head>
 
 <body>
-<header>
- <div class="brand">◈ AI COMPANY <span>MISSION CONTROL</span></div>
- <div class="status">● SYSTEM ONLINE · DEMO</div>
-</header>
+<div id="loading">Menyiapkan kantor AI...</div>
+<div id="scene"></div>
 
-<main>
- <section id="office">
-  <canvas id="scene"></canvas>
-  <div id="hint">Drag: putar kantor · Scroll: zoom · Klik karakter: lihat profil</div>
- </section>
-
- <aside id="side">
-  <div class="card">
-   <h3>Company Overview</h3>
-   <div class="muted">AI Workforce</div>
-   <div style="font-size:28px;margin:7px 0">
-    07 <span style="font-size:12px;color:#52d6a3">Employees</span>
-   </div>
-   <div class="muted">6 Departments · 1 Mission Control</div>
+<div class="topbar">
+  <div class="brand">
+    <strong>◈ AI COMPANY</strong>
+    <small>MISSION CONTROL · PROTOTYPE V2</small>
   </div>
-
-  <div class="card">
-   <h3>AI Employees</h3>
-   <div id="agents"></div>
+  <div class="top-actions">
+    <button id="homeBtn">⌂ Home View</button>
+    <button id="closeBtn">Tutup Panel</button>
   </div>
+</div>
 
-  <div class="card" id="profile">
-   <h3>Employee Profile</h3>
-   <div id="profileContent"></div>
-   <button onclick="closeProfile()">Close Profile</button>
+<aside class="panel left-panel">
+  <h3>Team Overview</h3>
+  <div class="sub">7 AI employees · Demo mode</div>
+  <div class="stat-grid">
+    <div class="stat"><strong id="totalAgents">7</strong><small>Total Agents</small></div>
+    <div class="stat"><strong id="workingAgents">2</strong><small>Working</small></div>
   </div>
+  <div class="agent-list" id="agentList"></div>
+  <p class="sub" style="margin-top:12px">
+    Status saat ini adalah data simulasi, bukan proses AI sungguhan.
+  </p>
+</aside>
 
-  <div class="card">
-   <h3>Live Activity</h3>
-   <div style="font-size:12px;line-height:1.9;color:#bdc9dc">
-    <div>🟢 CEO — Monitoring company</div>
-    <div>🔵 Research — Market analysis</div>
-    <div>🟢 Product — Developing templates</div>
-    <div>🟡 QA — Checking product quality</div>
-    <div>🔵 YouTube — Preparing content</div>
-    <div>🟢 Sales — Reviewing sales funnel</div>
-    <div>🟢 Finance — Tracking expenses</div>
-   </div>
+<aside class="panel right-panel" id="profilePanel">
+  <div class="profile-head">
+    <div class="profile-icon" id="profileIcon">🤖</div>
+    <div>
+      <strong id="profileName">Agent</strong>
+      <small id="profileRole">Role</small>
+    </div>
   </div>
+  <span class="status-pill" id="profileStatus">IDLE</span>
+  <span class="field-label">Tanggung jawab</span>
+  <div class="task-box" id="profileDesc"></div>
+  <span class="field-label">Tugas saat ini</span>
+  <div class="task-box" id="currentTask"></div>
+  <label class="field-label" for="taskInput">Berikan tugas baru</label>
+  <textarea id="taskInput" placeholder="Contoh: Riset 10 ide produk digital untuk pasar Indonesia..."></textarea>
+  <button class="primary" id="assignBtn" style="width:100%;margin-top:9px">
+    Kirim Tugas (Simulasi)
+  </button>
+  <p class="sub" style="margin-top:10px">
+    Tugas hanya dicatat pada sesi browser ini. Belum dieksekusi oleh AI.
+  </p>
+</aside>
 
-  <div class="muted">Prototype v1.1 · Demo activities</div>
- </aside>
-</main>
+<div class="bottom-hint">Klik karakter untuk membuka profil · Drag untuk memutar · Scroll untuk zoom</div>
+<div id="toast"></div>
 
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-const canvas=document.getElementById('scene');
-const scene=new THREE.Scene();
-scene.background=new THREE.Color('#0b1020');
+const agents = [
+  {
+    id:'ceo', name:'CEO Agent', role:'Chief Executive Officer',
+    icon:'👨‍💼', color:0x315b91, room:'CEO Office',
+    desc:'Mengatur prioritas perusahaan, membagi pekerjaan, memantau hasil, dan meminta persetujuan owner.',
+    task:'Memantau seluruh aktivitas perusahaan.',
+    status:'Monitoring', position:[-7.1,0, -4.0]
+  },
+  {
+    id:'research', name:'Research Agent', role:'Market Research',
+    icon:'🔎', color:0x4c8d9b, room:'Research Area',
+    desc:'Mencari tren pasar, kebutuhan pelanggan, kompetitor, dan peluang produk digital.',
+    task:'Mencari peluang produk digital.',
+    status:'Working', position:[-3.9,0,-3.7]
+  },
+  {
+    id:'product', name:'Product Agent', role:'Product Creator',
+    icon:'📦', color:0x7b69a8, room:'Product Studio',
+    desc:'Menyusun dan membuat template Excel, Google Sheets, Notion, serta produk digital.',
+    task:'Menyusun konsep template produktivitas.',
+    status:'Working', position:[0.0,0,-3.7]
+  },
+  {
+    id:'qa', name:'QA Agent', role:'Quality Assurance',
+    icon:'🧪', color:0x3c9273, room:'QA Lab',
+    desc:'Memeriksa fungsi, formula, tampilan, kesalahan, dan kelayakan produk sebelum dirilis.',
+    task:'Menunggu produk untuk diuji.',
+    status:'Idle', position:[4.0,0,-3.7]
+  },
+  {
+    id:'youtube', name:'YouTube Agent', role:'Content Creator',
+    icon:'🎬', color:0xb46c45, room:'Content Studio',
+    desc:'Membuat ide konten, naskah, judul, deskripsi, dan rencana publikasi faceless YouTube.',
+    task:'Menyusun ide konten pertama.',
+    status:'Idle', position:[-4.0,0,3.3]
+  },
+  {
+    id:'sales', name:'Sales Agent', role:'Marketing & Sales',
+    icon:'📈', color:0x3979b8, room:'Operations',
+    desc:'Menyusun strategi pemasaran, penawaran produk, pelayanan pelanggan, dan evaluasi penjualan.',
+    task:'Menunggu produk siap dipasarkan.',
+    status:'Idle', position:[0.0,0,3.3]
+  },
+  {
+    id:'finance', name:'Finance Agent', role:'Finance Controller',
+    icon:'💰', color:0x9b8643, room:'Operations',
+    desc:'Mencatat pemasukan, biaya, margin, target penjualan, dan membuat laporan keuangan.',
+    task:'Menyiapkan struktur laporan keuangan.',
+    status:'Idle', position:[4.0,0,3.3]
+  }
+];
 
-const camera=new THREE.PerspectiveCamera(35,1,0.1,100);
-camera.position.set(12,13,16);
+let selectedAgent = null;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xe9eef3);
+scene.fog = new THREE.Fog(0xe9eef3, 24, 48);
 
-const renderer=new THREE.WebGLRenderer({
- canvas,antialias:true
-});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-
-const controls=new OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;
-controls.target.set(0,0,0);
-controls.maxPolarAngle=Math.PI/2.05;
-controls.minDistance=9;
-controls.maxDistance=28;
-
-scene.add(new THREE.HemisphereLight(0xbad5ff,0x273047,2));
-
-const light=new THREE.DirectionalLight(0xffffff,3);
-light.position.set(8,15,10);
-light.castShadow=true;
-scene.add(light);
-
-const floor=new THREE.Mesh(
- new THREE.BoxGeometry(13,.35,9),
- new THREE.MeshStandardMaterial({color:'#263852'})
+const camera = new THREE.PerspectiveCamera(
+  38, window.innerWidth/window.innerHeight, 0.1, 100
 );
-floor.position.y=-.2;
-floor.receiveShadow=true;
-scene.add(floor);
+camera.position.set(15,17,20);
 
-const grid=new THREE.GridHelper(13,26,'#49617d','#354963');
-grid.position.y=0;
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+document.getElementById('scene').appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera,renderer.domElement);
+controls.target.set(0,0,0);
+controls.enableDamping = true;
+controls.dampingFactor = .06;
+controls.maxPolarAngle = Math.PI/2.05;
+controls.minDistance = 9;
+controls.maxDistance = 34;
+
+scene.add(new THREE.HemisphereLight(0xffffff,0xc5d0db,2.1));
+const sun = new THREE.DirectionalLight(0xffffff,2.4);
+sun.position.set(-8,16,10);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left = -18;
+sun.shadow.camera.right = 18;
+sun.shadow.camera.top = 18;
+sun.shadow.camera.bottom = -18;
+scene.add(sun);
+
+const warm = new THREE.PointLight(0xffe2b4,45,22);
+warm.position.set(0,7,0);
+scene.add(warm);
+
+const mats = {
+  floor:new THREE.MeshStandardMaterial({color:0xf7f8fa,roughness:.85}),
+  wall:new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9}),
+  wood:new THREE.MeshStandardMaterial({color:0xb88b62,roughness:.7}),
+  dark:new THREE.MeshStandardMaterial({color:0x344252,roughness:.65}),
+  glass:new THREE.MeshStandardMaterial({
+    color:0xb8d7e8,transparent:true,opacity:.22,roughness:.2
+  }),
+  metal:new THREE.MeshStandardMaterial({color:0x9ba8b5,metalness:.65,roughness:.35}),
+  green:new THREE.MeshStandardMaterial({color:0x5a9b72,roughness:.8}),
+  screen:new THREE.MeshStandardMaterial({
+    color:0x1d2c3d,emissive:0x24466b,emissiveIntensity:.5
+  })
+};
+
+function box(w,h,d,mat,x,y,z,shadow=true) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  m.position.set(x,y,z);
+  m.castShadow = shadow;
+  m.receiveShadow = true;
+  scene.add(m);
+  return m;
+}
+function cylinder(rt,rb,h,mat,x,y,z) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,16),mat);
+  m.position.set(x,y,z);
+  m.castShadow = true;
+  scene.add(m);
+  return m;
+}
+function label(text,x,z) {
+  const c=document.createElement('canvas');
+  c.width=512; c.height=128;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(0,0,512,128);
+  ctx.fillStyle='#263747';
+  ctx.font='bold 42px Arial';
+  ctx.textAlign='center';
+  ctx.fillText(text,256,80);
+  const tex=new THREE.CanvasTexture(c);
+  const mesh=new THREE.Mesh(
+    new THREE.PlaneGeometry(3.1,.78),
+    new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide})
+  );
+  mesh.rotation.x=-Math.PI/2;
+  mesh.position.set(x,.035,z);
+  scene.add(mesh);
+}
+
+// Lantai dan batas kantor
+box(20,.25,16,mats.floor,0,-.16,0);
+const grid = new THREE.GridHelper(20,20,0xdce2e8,0xe9edf1);
+grid.position.y=-.025;
 scene.add(grid);
 
-function material(color){
- return new THREE.MeshStandardMaterial({
-  color,roughness:.8
- });
+// Dinding belakang dan sisi kiri
+box(20,3.4,.22,mats.wall,0,1.55,-8);
+box(.22,3.4,16,mats.wall,-10,1.55,0);
+
+// Jendela kantor pada dinding belakang
+for(let i=0;i<4;i++){
+  box(3.6,2.1,.07,mats.glass,-6+i*4.0,1.8,-7.86,false);
+  box(.07,2.2,.08,mats.metal,-6+i*4.0,1.8,-7.8,false);
+}
+box(16,.08,.12,mats.metal,0,.75,-7.78,false);
+
+// Partisi kaca untuk membentuk area ruangan
+for(const x of [-5.8,-1.9,2.0,5.9]){
+  box(.07,2.25,4.7,mats.glass,x,1.05,-3.1,false);
+  box(.09,.08,4.7,mats.metal,x,2.18,-3.1,false);
+}
+box(8,.08,.07,mats.metal,-3.8,.12,-5.5,false);
+box(8,.08,.07,mats.metal,3.9,.12,-5.5,false);
+
+// Ruang meeting
+box(4.8,.12,2.3,mats.wood,0,.15,6.1);
+for(let i=0;i<6;i++){
+  const x=-1.65+(i%3)*1.65;
+  const z=5.1+Math.floor(i/3)*2;
+  cylinder(.24,.24,.45,mats.dark,x,.42,z);
+  box(.45,.8,.12,mats.dark,x,.82,z+.28);
+}
+label('MEETING ROOM',0,7.35);
+
+// Pantry
+box(3.0,.85,.65,mats.wood,7.7,.42,5.9);
+box(3.0,.08,.65,mats.metal,7.7,.88,5.9);
+box(.9,1.5,.75,mats.wall,8.6,.9,4.8);
+box(.7,.08,.7,mats.dark,8.6,1.68,4.8);
+cylinder(.18,.18,.12,mats.dark,7.1,1.0,5.9);
+label('PANTRY',7.7,7.2);
+
+// Rak dan tanaman
+function plant(x,z){
+  cylinder(.34,.42,.55,mats.wood,x,.3,z);
+  cylinder(.06,.06,.8,mats.wood,x,.92,z);
+  for(let i=0;i<5;i++){
+    const leaf=new THREE.Mesh(
+      new THREE.SphereGeometry(.28,12,10),
+      mats.green
+    );
+    leaf.scale.set(.7,1.5,.7);
+    leaf.position.set(x+Math.sin(i*1.25)*.27,1.25+Math.cos(i)*.12,z+Math.cos(i*1.25)*.22);
+    leaf.castShadow=true;
+    scene.add(leaf);
+  }
+}
+plant(-9,-6.5); plant(9,-6.5); plant(-9,6.7); plant(9,2.5);
+
+// Lampu plafon
+for(let x=-7.5;x<=7.5;x+=5){
+  for(let z=-5;z<=5;z+=5){
+    box(1.6,.07,.35,mats.wall,x,3.0,z,false);
+    const light=new THREE.PointLight(0xfff1d8,10,7);
+    light.position.set(x,2.8,z);
+    scene.add(light);
+  }
 }
 
-function box(parent,w,h,d,x,y,z,color){
- const m=new THREE.Mesh(
-  new THREE.BoxGeometry(w,h,d),material(color)
- );
- m.position.set(x,y,z);
- m.castShadow=true;
- m.receiveShadow=true;
- parent.add(m);
- return m;
+// Meja kerja, monitor, kursi
+function workstation(x,z){
+  box(2.0,.14,1.0,mats.wood,x,.95,z);
+  box(.12,.9,.12,mats.metal,x-.8,.48,z-.35);
+  box(.12,.9,.12,mats.metal,x+.8,.48,z-.35);
+  box(.12,.9,.12,mats.metal,x-.8,.48,z+.35);
+  box(.12,.9,.12,mats.metal,x+.8,.48,z+.35);
+  box(.85,.55,.07,mats.dark,x,.34,z+.9);
+  box(.75,.46,.05,mats.screen,x,1.35,z-.22);
+  box(.12,.2,.12,mats.metal,x,1.02,z-.22);
+  box(.45,.04,.3,mats.dark,x,1.08,z-.22);
+  box(.42,.06,.3,mats.dark,x,1.04,z+.25);
+}
+for(const p of agents){
+  if(p.id!=='ceo') workstation(p.position[0],p.position[2]+.75);
 }
 
-function makeLabel(text){
- const c=document.createElement('canvas');
- c.width=512;c.height=96;
- const ctx=c.getContext('2d');
- ctx.fillStyle='#101b2c';
- ctx.fillRect(0,0,512,96);
- ctx.fillStyle='white';
- ctx.font='bold 34px Arial';
- ctx.textAlign='center';
- ctx.fillText(text,256,62);
+// Meja CEO
+box(2.6,.16,1.3,mats.wood,-7.1,1,-5.5);
+box(1.1,.7,.06,mats.screen,-7.1,1.65,-5.85);
+box(.15,.95,.15,mats.metal,-8.1,.5,-5.5);
+box(.15,.95,.15,mats.metal,-6.1,.5,-5.5);
+label('CEO OFFICE',-7.1,-6.9);
+label('RESEARCH',-3.9,-6.1);
+label('PRODUCT STUDIO',0,-6.1);
+label('QA LAB',4,-6.1);
+label('CONTENT STUDIO',-4,5.0);
+label('OPERATIONS',2,5.0);
 
- const texture=new THREE.CanvasTexture(c);
- return new THREE.Mesh(
-  new THREE.PlaneGeometry(2.5,.47),
-  new THREE.MeshBasicMaterial({map:texture})
- );
-}
-
-const rooms=[
- {name:'CEO OFFICE',x:-4,z:-2,c:'#3d718f'},
- {name:'RESEARCH',x:0,z:-2,c:'#476a9d'},
- {name:'PRODUCT',x:4,z:-2,c:'#397f78'},
- {name:'QUALITY ASSURANCE',x:-4,z:2,c:'#8b7045'},
- {name:'YOUTUBE STUDIO',x:0,z:2,c:'#80547c'},
- {name:'SALES & FINANCE',x:4,z:2,c:'#637b50'}
-];
-
-rooms.forEach(r=>{
- const g=new THREE.Group();
- g.position.set(r.x,0,r.z);
- scene.add(g);
-
- box(g,3.7,.12,2.7,0,.12,0,r.c);
- box(g,3.7,1.15,.12,0,.7,-1.35,'#34475f');
- box(g,.12,1.15,2.7,-1.85,.7,0,'#34475f');
- box(g,.12,1.15,2.7,1.85,.7,0,'#34475f');
- box(g,1.3,.15,.7,0,.55,0,'#9ba9ba');
- box(g,.12,.6,.12,-.5,.15,.2,'#b4c2d4');
- box(g,.12,.6,.12,.5,.15,.2,'#b4c2d4');
-
- const label=makeLabel(r.name);
- label.position.set(0,1.35,-1.18);
- g.add(label);
-});
-
-const people=[
- ['CEO','Chief Executive Officer','Strategic planning','🧠',-4,-2,'#f2c078'],
- ['Research','Market Research Agent','Market analysis','🔎',0,-2,'#8ec9ff'],
- ['Product','Product Development Agent','Creating templates','💡',4,-2,'#7ee0c0'],
- ['QA','Quality Assurance Agent','Testing products','🛠️',-4,2,'#ffc875'],
- ['YouTube','YouTube Content Agent','Preparing videos','🎬',0,2,'#e5a3ff'],
- ['Sales','Sales Agent','Managing sales','📈',3.3,2,'#9ee58e'],
- ['Finance','Finance Agent','Tracking finances','💰',4.7,2,'#f2dc78']
-];
-
+// Character creator: simple stylized 3D humanoid
 const clickable=[];
+const animated=[];
 
-people.forEach((p,i)=>{
- const g=new THREE.Group();
- g.position.set(p[4],0,p[5]+.45);
- g.userData.index=i;
- scene.add(g);
+function createAgent(agent){
+  const group=new THREE.Group();
+  group.position.set(...agent.position);
+  scene.add(group);
 
- const body=new THREE.Mesh(
-  new THREE.CylinderGeometry(.25,.32,.65,16),
-  material('#273b59')
- );
- body.position.y=.58;
- body.castShadow=true;
- g.add(body);
+  const shirt=new THREE.MeshStandardMaterial({color:agent.color,roughness:.8});
+  const skin=new THREE.MeshStandardMaterial({color:0xe5b995,roughness:.9});
+  const pants=new THREE.MeshStandardMaterial({color:0x34445b,roughness:.9});
+  const hair=new THREE.MeshStandardMaterial({color:0x332c2a,roughness:1});
 
- const head=new THREE.Mesh(
-  new THREE.SphereGeometry(.24,20,16),
-  material(p[6])
- );
- head.position.y=1.12;
- head.castShadow=true;
- g.add(head);
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.58,4,8),shirt);
+  torso.position.y=1.18;
+  torso.castShadow=true;
+  group.add(torso);
 
- const hair=new THREE.Mesh(
-  new THREE.SphereGeometry(
-   .245,16,8,0,Math.PI*2,0,Math.PI/2
-  ),
-  material('#263044')
- );
- hair.position.y=1.23;
- g.add(hair);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.27,16,16),skin);
+  head.position.y=1.88;
+  head.castShadow=true;
+  group.add(head);
 
- [-.085,.085].forEach(x=>{
-  const eye=new THREE.Mesh(
-   new THREE.SphereGeometry(.025,8,8),
-   material('#172333')
+  const hairCap=new THREE.Mesh(new THREE.SphereGeometry(.275,16,12,0,Math.PI*2,0,Math.PI*.55),hair);
+  hairCap.position.y=2.0;
+  group.add(hairCap);
+
+  const leftArm=new THREE.Group();
+  leftArm.position.set(-.36,1.42,0);
+  group.add(leftArm);
+  const arm1=new THREE.Mesh(new THREE.CapsuleGeometry(.095,.42,3,7),skin);
+  arm1.position.y=-.27; arm1.rotation.z=-.2;
+  leftArm.add(arm1);
+
+  const rightArm=new THREE.Group();
+  rightArm.position.set(.36,1.42,0);
+  group.add(rightArm);
+  const arm2=new THREE.Mesh(new THREE.CapsuleGeometry(.095,.42,3,7),skin);
+  arm2.position.y=-.27; arm2.rotation.z=.2;
+  rightArm.add(arm2);
+
+  for(const side of [-1,1]){
+    const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.48,3,7),pants);
+    leg.position.set(side*.17,.47,0);
+    leg.castShadow=true;
+    group.add(leg);
+  }
+
+  const shadow=new THREE.Mesh(
+    new THREE.CircleGeometry(.55,24),
+    new THREE.MeshBasicMaterial({color:0x778899,transparent:true,opacity:.16})
   );
-  eye.position.set(x,1.14,.21);
-  g.add(eye);
- });
+  shadow.rotation.x=-Math.PI/2;
+  shadow.position.y=.015;
+  group.add(shadow);
 
- const base=new THREE.Mesh(
-  new THREE.CylinderGeometry(.32,.32,.06,16),
-  material('#7a91ae')
- );
- base.position.y=.06;
- g.add(base);
+  const ring=new THREE.Mesh(
+    new THREE.TorusGeometry(.58,.035,8,36),
+    new THREE.MeshBasicMaterial({color:0x4386ed})
+  );
+  ring.rotation.x=Math.PI/2;
+  ring.position.y=.05;
+  ring.visible=false;
+  group.add(ring);
 
- clickable.push(g);
+  group.userData={agent,ring,leftArm,rightArm,torso};
+  clickable.push(group);
+  animated.push(group);
+  return group;
+}
+agents.forEach(createAgent);
 
- const el=document.createElement('div');
- el.className='agent';
- el.innerHTML=`
-  <div class="avatar">${p[3]}</div>
-  <div>
-   <strong>${p[0]}</strong>
-   <small><span class="dot"></span>Available · Demo</small>
-  </div>`;
- el.onclick=()=>showProfile(i);
- document.getElementById('agents').appendChild(el);
-});
-
-window.showProfile=function(i){
- const p=people[i];
- document.getElementById('profile').style.display='block';
- document.getElementById('profileContent').innerHTML=`
-  <h2>${p[3]} ${p[0]}</h2>
-  <p class="muted">${p[1]}</p>
-  <p>Current task: ${p[2]}</p>
-  <p class="muted">Status: Demo / Simulation</p>`;
-};
-
-window.closeProfile=function(){
- document.getElementById('profile').style.display='none';
-};
-
+// Area interaksi dan pemilihan agent
 const raycaster=new THREE.Raycaster();
 const pointer=new THREE.Vector2();
+let downX=0,downY=0;
 
-canvas.addEventListener('click',e=>{
- const rect=canvas.getBoundingClientRect();
- pointer.x=((e.clientX-rect.left)/rect.width)*2-1;
- pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;
-
- raycaster.setFromCamera(pointer,camera);
- const hits=raycaster.intersectObjects(clickable,true);
-
- if(hits.length){
-  let obj=hits[0].object;
-  while(obj && obj.userData.index===undefined){
-   obj=obj.parent;
+renderer.domElement.addEventListener('pointerdown',e=>{
+  downX=e.clientX; downY=e.clientY;
+});
+renderer.domElement.addEventListener('pointerup',e=>{
+  if(Math.abs(e.clientX-downX)>5 || Math.abs(e.clientY-downY)>5) return;
+  pointer.x=(e.clientX/window.innerWidth)*2-1;
+  pointer.y=-(e.clientY/window.innerHeight)*2+1;
+  raycaster.setFromCamera(pointer,camera);
+  const hits=raycaster.intersectObjects(clickable,true);
+  if(hits.length){
+    let obj=hits[0].object;
+    while(obj && !obj.userData.agent) obj=obj.parent;
+    if(obj) selectAgent(obj.userData.agent);
   }
-  if(obj)showProfile(obj.userData.index);
- }
 });
 
-function resize(){
- const w=canvas.clientWidth;
- const h=canvas.clientHeight;
- if(!w || !h)return;
+function renderAgentList(){
+  const list=document.getElementById('agentList');
+  list.innerHTML='';
+  agents.forEach(a=>{
+    const row=document.createElement('div');
+    row.className='agent-row';
+    row.innerHTML=`
+      <div class="avatar">${a.icon}</div>
+      <div><strong>${a.name}</strong><small>${a.status}</small></div>
+      <span class="dot" style="background:${a.status==='Working'?'#20a66a':a.status==='Monitoring'?'#3978e8':'#c2c9d1'}"></span>`;
+    row.addEventListener('click',()=>selectAgent(a));
+    list.appendChild(row);
+  });
+  document.getElementById('workingAgents').textContent=
+    agents.filter(a=>a.status==='Working').length;
+}
+renderAgentList();
 
- camera.aspect=w/h;
- camera.updateProjectionMatrix();
- renderer.setSize(w,h,false);
+function selectAgent(agent){
+  selectedAgent=agent;
+  document.getElementById('profilePanel').style.display='block';
+  document.getElementById('profileIcon').textContent=agent.icon;
+  document.getElementById('profileName').textContent=agent.name;
+  document.getElementById('profileRole').textContent=agent.role+' · '+agent.room;
+  document.getElementById('profileDesc').textContent=agent.desc;
+  document.getElementById('currentTask').textContent=agent.task;
+  document.getElementById('profileStatus').textContent=agent.status.toUpperCase();
+  document.getElementById('taskInput').value='';
+  clickable.forEach(c=>c.userData.ring.visible=c.userData.agent.id===agent.id);
 }
 
-window.addEventListener('resize',resize);
-new ResizeObserver(resize).observe(
- document.getElementById('office')
-);
-resize();
+function closePanel(){
+  document.getElementById('profilePanel').style.display='none';
+  selectedAgent=null;
+  clickable.forEach(c=>c.userData.ring.visible=false);
+}
+document.getElementById('closeBtn').addEventListener('click',closePanel);
 
+document.getElementById('assignBtn').addEventListener('click',()=>{
+  if(!selectedAgent) return;
+  const task=document.getElementById('taskInput').value.trim();
+  if(!task){ showToast('Tulis tugas terlebih dahulu.'); return; }
+  selectedAgent.task=task;
+  selectedAgent.status='Working';
+  document.getElementById('currentTask').textContent=task;
+  document.getElementById('profileStatus').textContent='WORKING';
+  renderAgentList();
+  showToast('Tugas simulasi diberikan kepada '+selectedAgent.name);
+});
+
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.style.display='block';
+  clearTimeout(showToast.timer);
+  showToast.timer=setTimeout(()=>el.style.display='none',2600);
+}
+
+// Kamera awal dan tombol home
+function homeView(){
+  camera.position.set(15,17,20);
+  controls.target.set(0,0,0);
+  controls.update();
+}
+document.getElementById('homeBtn').addEventListener('click',homeView);
+
+// Animasi idle dan bekerja
 const clock=new THREE.Clock();
-
 function animate(){
- requestAnimationFrame(animate);
- const t=clock.getElapsedTime();
-
- clickable.forEach((g,i)=>{
-  g.position.y=.05+Math.sin(t*2+i)*.045;
-  g.rotation.y=Math.sin(t*.7+i)*.12;
- });
-
- controls.update();
- renderer.render(scene,camera);
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+  animated.forEach((g,i)=>{
+    const a=g.userData.agent;
+    g.position.y=Math.sin(t*1.7+i)*.025;
+    g.userData.ring.rotation.z=t*.35;
+    if(a.status==='Working'){
+      g.userData.leftArm.rotation.x=Math.sin(t*7+i)*.22-.25;
+      g.userData.rightArm.rotation.x=Math.cos(t*7+i)*.22-.25;
+    } else {
+      g.userData.leftArm.rotation.x=Math.sin(t*1.5+i)*.08;
+      g.userData.rightArm.rotation.x=Math.cos(t*1.5+i)*.08;
+    }
+  });
+  controls.update();
+  renderer.render(scene,camera);
 }
-
 animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+// Sembunyikan loading setelah scene siap
+document.getElementById('loading').style.display='none';
 </script>
 </body>
 </html>
